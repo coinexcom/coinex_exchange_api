@@ -7,7 +7,11 @@ from __future__ import unicode_literals
 import time
 import hashlib
 import json as complex_json
-import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+
+urllib3.disable_warnings(InsecureRequestWarning)
+http = urllib3.PoolManager(timeout=urllib3.Timeout(connect=1, read=2))
 
 
 class RequestClient(object):
@@ -18,8 +22,9 @@ class RequestClient(object):
     }
 
     def __init__(self, headers={}):
-        self.access_id = 'xxx'      # replace
-        self.secret_key = 'xxx'     # replace
+        self.access_id = ''      # replace
+        self.secret_key = ''     # replace
+        self.url = 'https://api.coinex.com'
         self.headers = self.__headers
         self.headers.update(headers)
 
@@ -40,43 +45,114 @@ class RequestClient(object):
 
     def request(self, method, url, params={}, data='', json={}):
         method = method.upper()
-        if method == 'GET':
+        if method in ['GET', 'DELETE']:
             self.set_authorization(params)
-            print url
-            print params
-            result = requests.request('GET', url, params=params, headers=self.headers)
+            result = http.request(method, url, fields=params, headers=self.headers)
         else:
             if data:
                 json.update(complex_json.loads(data))
             self.set_authorization(json)
-            print url
-            print json
-            result = requests.request(method, url, json=json, headers=self.headers)
+            encoded_data = complex_json.dumps(json).encode('utf-8')
+            result = http.request(method, url, body=encoded_data, headers=self.headers)
         return result
 
 
 def get_account():
     request_client = RequestClient()
-    response = request_client.request('GET', 'https://api.coinex.com/v1/balance/')
+    response = request_client.request('GET', '{url}/v1/balance/'.format(url=request_client.url))
+    print response.status
+
+
+def order_pending(market_type):
+    request_client = RequestClient()
+    params = {
+        'market': market_type
+    }
+    response = request_client.request(
+            'GET',
+            '{url}/v1/order/pending'.format(url=request_client.url),
+            params=params
+    )
     print response.content
+
+
+def order_finished(market_type, page, limit):
+    request_client = RequestClient()
+    params = {
+        'market': market_type,
+        'page': page,
+        'limit': limit
+    }
+    response = request_client.request(
+            'GET',
+            '{url}/v1/order/finished'.format(url=request_client.url),
+            params=params
+    )
+    print response.status
 
 
 def put_limit():
     request_client = RequestClient()
-
     data = {
-            "amount": "0.4199",
-            "price": "1",
+            "amount": "10",
+            "price": "0.0001",
             "type": "sell",
-            "market": "CDYBCH"
+            "market": "CETBCH"
         }
 
     response = request_client.request(
             'POST',
-            'https://api.coinex.com/v1/order/limit',
+            '{url}/v1/order/limit'.format(url=request_client.url),
+            json=data,
+    )
+    return response.data
+
+
+def put_market():
+    request_client = RequestClient()
+
+    data = {
+            "amount": "1",
+            "type": "sell",
+            "market": "CETBCH"
+        }
+
+    response = request_client.request(
+            'POST',
+            '{url}/v1/order/market'.format(url=request_client.url),
             json=data,
     )
     print response.content
 
+
+def cancel_order(id, market):
+    request_client = RequestClient()
+    data = {
+        "id": id,
+        "market": market,
+    }
+    print market
+
+    response = request_client.request(
+            'DELETE',
+            '{url}/v1/order/pending'.format(url=request_client.url),
+            params=data,
+    )
+    return response.data
+
+
 if __name__ == '__main__':
-    print get_account()
+    count = 1
+    a = time.time() * 1000
+    while True:
+        b = time.time() * 1000
+        order_data = complex_json.loads(put_limit())['data']
+        id = order_data['id']
+        market = order_data['market']
+        cancel_order(id, market)
+        print time.time() * 1000 - b
+        count += 1
+        if count >= 50:
+            break
+
+    print 'avg', (time.time() * 1000 - a) / 50.0
