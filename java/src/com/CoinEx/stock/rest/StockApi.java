@@ -25,47 +25,24 @@ public class StockApi {
 		this.url_prex = url_prex;
 	}
 	
-	/**
-	 * 行情URL
-	 */
 	private final String TICKER_URL = "market/ticker";
-	
-	/**
-	 * 市场深度URL
-	 */
+
 	private final String DEPTH_URL = "market/depth";
 	
-	/**
-	 * 历史交易信息URL
-	 */
 	private final String TRADES_URL = "market/deals";
 	
-	/**
-	 * 历史交易信息URL
-	 */
 	private final String KLINE_URL = "market/kline";
-	
-	/**
-	 *  批量获取用户订单URL
-	 */
+
 	private final String BALANCE_URL = "balance/";
 	
 	private final String PENDING_ORDER_URL = "order/pending";
 	
 	private final String FINISHED_ORDER_URL = "order/finished";
-	/**
-	 * 下限价单
-	 */
+
 	private final String PUT_LIMIT_URL = "order/limit";
-	
-	/**
-	 * 下限价单
-	 */
+
 	private final String PUT_MARKET_URL = "order/market";
 
-	/**
-	 *  撤销订单URL
-	 */
 	private final String CANCEL_ORDER_URL = "order/pending";
 	
 	private enum HTTP_METHOD {
