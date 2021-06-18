@@ -1,1 +1,4 @@
 .idea/
+/php/composer.json
+/php/composer.lock
+/php/vendor
