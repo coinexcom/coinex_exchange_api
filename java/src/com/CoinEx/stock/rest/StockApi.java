@@ -89,17 +89,13 @@ public class StockApi {
 		String authorization = MD5Util.buildMysignV1(paramMap, this.secret_key);
 		HttpUtilManager httpUtil = HttpUtilManager.getInstance();
 		switch (method) {
-		case GET:
-			return httpUtil.requestHttpGet(url_prex, url, paramMap, authorization);
-			
-		case POST:
-			return httpUtil.requestHttpPost(url_prex, url, paramMap, authorization);
-			
-		case DELETE:
-			return httpUtil.requestHttpDelete(url_prex, url, paramMap, authorization);
-
-		default:
-			return httpUtil.requestHttpGet(url_prex, url, paramMap, authorization);
+			case POST:
+				return httpUtil.requestHttpPost(url_prex, url, paramMap, authorization);
+			case DELETE:
+				return httpUtil.requestHttpDelete(url_prex, url, paramMap, authorization);
+			case GET:
+			default:
+				return httpUtil.requestHttpGet(url_prex, url, paramMap, authorization);
 		}
 	}
 	
