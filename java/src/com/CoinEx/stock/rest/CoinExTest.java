@@ -11,8 +11,8 @@ public class CoinExTest {
 	public static void main(String[] args) throws HttpException, IOException{
 		
 	    String access_id = ""; 
-       	String secret_key = ""; 
-	    String url_prex = "https://api.coinex.com/v1/"
+		String secret_key = "";
+	    String url_prex = "https://api.coinex.com/v1/";
 	
 	    StockApi api = new StockApi(url_prex, access_id, secret_key);
 	    String account = api.account();
