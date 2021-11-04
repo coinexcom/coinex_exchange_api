@@ -85,7 +85,7 @@ public class StockApi {
 			paramMap = new HashMap<>();
 		}
 		paramMap.put("access_id", this.accessId);
-		paramMap.put("tonce", new Long(System.currentTimeMillis()).toString());
+		paramMap.put("tonce", Long.toString(System.currentTimeMillis()));
 		String authorization = MD5Util.buildMysignV1(paramMap, this.secret_key);
 		HttpUtilManager httpUtil = HttpUtilManager.getInstance();
 		switch (method) {
