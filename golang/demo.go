@@ -134,15 +134,13 @@ func httpRequest(method, urlHost string, reqParameters map[string]interface{}) (
 	}
 
 	urlParameters := url.Values{}
-	urlParameters.Add("access_id", ACCESSID)
-	urlParameters.Add("tonce", currentMilliseconds)
 	for k, v := range params {
 		value := fmt.Sprintf("%v", v)
 		urlParameters.Add(k, value)
 	}
 
 	queryParamsString := urlParameters.Encode()
-	toEncodearamsString := queryParamsString + "&secrect=" + SECRETKEY
+	toEncodearamsString := queryParamsString + "&secret_key=" + SECRETKEY
 	req.Header.Set("Content-Type", CONTENTTYPE)
 	req.Header.Set("User-Agent", USERAGENT)
 	req.Header.Set("authorization", generateAuthorization(toEncodearamsString))
