@@ -8,7 +8,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"reflect"
+	"sort"
 	"strings"
 	"time"
 )
@@ -111,6 +112,23 @@ type OrderFinishedResp struct {
 	} `json:"data"`
 }
 
+func interfaceToString(v interface{}) string {
+	rt := reflect.TypeOf(v)
+	switch rt.Kind() {
+	case reflect.Bool:
+		return strings.Title(fmt.Sprintf("%v", v))
+	case reflect.Slice, reflect.Array:
+		var items []string
+		s := reflect.ValueOf(v)
+		for i := 0; i < s.Len(); i++ {
+			items = append(items, "'"+interfaceToString(s.Index(i))+"'")
+		}
+		return "[" + strings.Join(items, ", ") + "]"
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func httpRequest(method, urlHost string, reqParameters map[string]interface{}) ([]byte, error) {
 	params := make(map[string]interface{}, len(reqParameters))
 	for k, v := range reqParameters {
@@ -133,19 +151,20 @@ func httpRequest(method, urlHost string, reqParameters map[string]interface{}) (
 		return nil, err
 	}
 
-	urlParameters := url.Values{}
-	urlParameters.Add("access_id", ACCESSID)
-	urlParameters.Add("tonce", currentMilliseconds)
-	for k, v := range params {
-		value := fmt.Sprintf("%v", v)
-		urlParameters.Add(k, value)
+	keys := []string{}
+	for k := range params {
+		keys = append(keys, k)
 	}
+	sort.Strings(keys)
 
-	queryParamsString := urlParameters.Encode()
-	toEncodearamsString := queryParamsString + "&secrect=" + SECRETKEY
+	queryParamsString := ""
+	for _, k := range keys {
+		queryParamsString += fmt.Sprintf("%s=%s&", k, interfaceToString(params[k]))
+	}
+	toEncodeparamsString := queryParamsString + "secret_key=" + SECRETKEY
 	req.Header.Set("Content-Type", CONTENTTYPE)
 	req.Header.Set("User-Agent", USERAGENT)
-	req.Header.Set("authorization", generateAuthorization(toEncodearamsString))
+	req.Header.Set("authorization", generateAuthorization(toEncodeparamsString))
 	if method == "GET" || method == "DELETE" {
 		req.URL.RawQuery = queryParamsString
 	}
@@ -249,6 +268,20 @@ func PutMarketOrder(amount, orderType, market string) ([]byte, error) {
 		return nil, err
 	}
 
+	return resp, nil
+}
+
+// CreateSubAccount create sub account
+func CreateSubAccount(name string, allowedIPs []string) ([]byte, error) {
+	parameters := map[string]interface{}{
+		"allow_trade":   true,
+		"allowed_ips":   allowedIPs,
+		"sub_user_name": name,
+	}
+	resp, err := HTTPPost(APIHTTPHOST+"/v1/sub_account/auth/api", parameters)
+	if err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 
