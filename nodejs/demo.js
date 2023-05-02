@@ -39,7 +39,7 @@ const axios = Axios.create({
  *  demo
  */
 
-async function getMaketList() {
+async function getMarketList() {
   const res = await axios.get("/market/list");
   console.log("market list:\n", JSON.stringify(res.data, null, 2));
 }
@@ -133,7 +133,7 @@ async function cancelOrder(market, id) {
 
 
 async function demo() {
-  await getMaketList();
+  await getMarketList();
 
   await getAccountInfo();
 
